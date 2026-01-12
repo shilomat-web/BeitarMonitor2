@@ -12,16 +12,26 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
+    
+    - name: List files
+      run: |
+        echo "Current directory:"
+        pwd
+        echo "Files in current directory:"
+        ls -la
         
     - name: Install dependencies
-      run: |
-        npm install playwright playwright-extra puppeteer-extra-plugin-stealth
-        npx playwright install chromium
+      run: npm install
+        
+    - name: Install Playwright browsers
+      run: npx playwright install chromium --with-deps
         
     - name: Run monitor script
       env:
@@ -33,21 +43,5 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add -A
-        git diff --quiet && git diff --staged --quiet || git commit -m "Update events cache"
-        git push
-```
-
-4. **Commit changes**
-
----
-
-### אחרי התיקון, המבנה הנכון אמור להיות:
-```
-beitar-monitor/
-├── .github/
-│   └── workflows/
-│       └── monitor.yml          ← זה הקובץ החשוב!
-├── events_cache.json
-├── monitor.js
-└── package.json
+        git add events_cache.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Update events cache" && git push)
