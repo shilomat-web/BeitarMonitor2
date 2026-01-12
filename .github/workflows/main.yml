@@ -1,0 +1,47 @@
+name: Beitar Events Monitor
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check-events:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: List files
+      run: |
+        echo "Current directory:"
+        pwd
+        echo "Files in current directory:"
+        ls -la
+        
+    - name: Install dependencies
+      run: npm install
+        
+    - name: Install Playwright browsers
+      run: npx playwright install chromium --with-deps
+        
+    - name: Run monitor script
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: node monitor.js
+      
+    - name: Commit cache if changed
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add events_cache.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Update events cache" && git push)
