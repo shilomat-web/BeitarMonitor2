@@ -11,20 +11,18 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-      
+        persist-credentials: true # חשוב כדי לאפשר לגיטהאב לעשות push בסוף
+
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
     
-    - name: List files
+    - name: List files (Debug)
       run: |
-        echo "Current directory:"
-        pwd
-        echo "Files in current directory:"
+        echo "Checking if monitor.js exists..."
         ls -la
         
     - name: Install dependencies
@@ -43,5 +41,5 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add events_cache.json
+        git add events_cache.json || echo "No cache file yet"
         git diff --quiet && git diff --staged --quiet || (git commit -m "Update events cache" && git push)
